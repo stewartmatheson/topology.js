@@ -171,9 +171,6 @@ Topology.Page = function(site, path) {
     };
 
     this.valid = function(){
-
-        return false;
-
         if(current_page.site.page_collection.exists(this)){
             return false;
         }
@@ -214,11 +211,6 @@ var s = new Topology.Site({
 
 
 process.on('exit', function(){
-    console.log("[INFO] Pages Found: " + s.page_collection.length());
-    s.page_collection.each(function(item){
-        item.printReport();
-    });
-
     var fs = require('fs');
     fs.writeFileSync("results.json", s.to_json());
 });
