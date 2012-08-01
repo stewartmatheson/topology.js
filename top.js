@@ -82,9 +82,11 @@ Topology.Collections.Page = function() {
 
 
 
-Topology.Site = function(url) {
-    this.host = url.host
-    this.port = url.port
+Topology.Site = function(site_data) {
+    this.host       = site_data.host
+    this.port       = site_data.port
+    this.site_name  = site_data.site_name
+
     //create the collection of pages for this site
     this.page_collection = new Topology.Collections.Page();
 
@@ -95,8 +97,9 @@ Topology.Site = function(url) {
 
     this.to_json = function(){
         return JSON.stringify({
-            site    : this.host,
-            pages   : this.page_collection.as_json()
+            site        : this.host,
+            pages       : this.page_collection.as_json(),
+            site_name   : this.site_name
         });
     };
 }
@@ -110,6 +113,7 @@ Topology.Page = function(site, path) {
     this.errors = [];
     this.warnings = [];
     this.messages = []; 
+    this.status_code = "";
 
     var $               = {},
         current_page    = this; 
@@ -139,6 +143,7 @@ Topology.Page = function(site, path) {
             port : current_page.site.port, 
             path : current_page.path },
         function(response) {
+            current_page.status_code = response.statusCode;
             if(response.statusCode >= 500 && response.statusCode < 600 ){
                 current_page.errors.push("Page returned HTTP status code " + response.statusCode)
             } else {
@@ -179,8 +184,11 @@ Topology.Page = function(site, path) {
             return false;
         }
 
-        //make sure we only scrape urls that are part of the site
         if(URL.parse(this.path).host !== undefined) {
+            return false;
+        }
+
+        if(this.path.substring(0,1) === "#") {
             return false;
         }
 
@@ -196,7 +204,8 @@ Topology.Page = function(site, path) {
             path        : this.path,
             errors      : this.errors,
             warnings    : this.warnings,
-            messgaes    : this.messgaes
+            messgaes    : this.messgaes,
+            status_code : this.status_code
         };
     };
 }
@@ -204,8 +213,9 @@ Topology.Page = function(site, path) {
 
 
 var s = new Topology.Site({
-    host : "localhost",
-    port : "3000"
+    site_name   : "ecostore",
+    host        : "localhost",
+    port        : "3000"
 });
 
 

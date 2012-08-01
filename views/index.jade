@@ -1,0 +1,43 @@
+doctype 5
+html(lang="en")
+  head
+    title topology.js
+    link(rel="stylesheet", href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.0.4/css/bootstrap-combined.min.css", type="text/css", media="screen", charset="utf-8")
+    link(rel="stylesheet", href="style.css", type="text/css", media="screen", charset="utf-8")
+
+  body(data-offset="50")
+
+    div.navbar.navbar-fixed-top
+      div.navbar-inner
+        div.container
+          a.btn.btn-navbar(data-toggle="collapse", data-target=".nav-collapse")
+            a.brand topology.js
+
+    div.container
+      div.row
+        div.span1
+          h1 #{site_name} 
+        div.span2.offset9
+          p Pages Discovered: #{pages.length}
+
+      div.row
+        div.span12
+          table.table.table-striped
+            tr
+              th 
+              th Path
+              th Status
+            - for (var i = 0; i < pages.length; i++) {
+            tr
+              td
+                span.label.label-important 
+                  != pages[i].display_result()
+              td 
+                a(href="http://#{site}#{pages[i].path}") #{pages[i].path}
+              td
+                != pages[i].display_status()
+            - }
+    
+    script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js", type="text/javascript", charset="utf-8")
+    script(src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.0.4/js/bootstrap.min.js", type="text/javascript", charset="utf-8")
+    script(src="frontend.js", type="text/javascript", charset="utf-8")
