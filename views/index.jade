@@ -19,6 +19,7 @@ html(lang="en")
           h1 #{site_name} 
         div.span2.offset9
           p Pages Discovered: #{pages.length}
+          p Crawled On: #{pages.time}
 
       div.row
         div.span12
@@ -26,6 +27,7 @@ html(lang="en")
             tr
               th 
               th Path
+              th Time
               th Status
             - for (var i = 0; i < pages.length; i++) {
             tr
@@ -34,6 +36,18 @@ html(lang="en")
                   != pages[i].display_result()
               td 
                 a(href="http://#{site}#{pages[i].path}") #{pages[i].path}
+                ul.errors
+                  - for (var j = 0; i < pages[i].errors.length; j++) {
+                    li = pages[i].errors[j]
+                  - }
+                ul.warnings
+                  - for (var j = 0; i < pages[i].warnings.length; j++) {
+                    li 
+                      = pages[i].warnings[j]
+                  - }
+                  
+
+              td  #{pages[i].response_time()} sec.
               td
                 != pages[i].display_status()
             - }

@@ -9,12 +9,12 @@ var http                    = require('http'),
 
 Topology.Rules.check_for_title = function($, page){
     if($("title").length === 0) {
-        page.errors.push("No title tag set");
+        page.warnings.push("No title tag set");
         return;
     }
     
     if($("title").text() === "") {
-        page.errors.push("No title tag set");
+        page.warnings.push("No title tag set");
     }
 }
 
@@ -84,14 +84,25 @@ Topology.Collections.Page = function() {
 
 Topology.Site = function(site_data) {
     this.host       = site_data.host
-    this.port       = site_data.port
     this.site_name  = site_data.site_name
+
+    //if the port is set then set it other wise default to 80
+    if(site_data.port === undefined) {
+        this.port = "80";
+    } else {
+        this.port = site_data.port;
+    }
+
+    //if a root page is given use that 
+    if(site_data.first_page === undefined) {
+        var first_page = new Topology.Page(this, "/");
+    } else {
+        var first_page = new Topology.Page(this, site_data.first_page);
+    }    
 
     //create the collection of pages for this site
     this.page_collection = new Topology.Collections.Page();
 
-    //start off with the index page
-    var first_page = new Topology.Page(this, "/");
     this.page_collection.push(first_page);
     first_page.parse();
 
@@ -99,7 +110,10 @@ Topology.Site = function(site_data) {
         return JSON.stringify({
             site        : this.host,
             pages       : this.page_collection.as_json(),
-            site_name   : this.site_name
+            site_name   : this.site_name,
+            port        : this.port,
+            first_page  : this.first_page, 
+            time        : new Date()
         });
     };
 }
@@ -138,6 +152,9 @@ Topology.Page = function(site, path) {
     };
 
     this.parse = function(){
+        current_page.start_time = new Date();
+        var page_data;
+
         var request = http.get({ 
             host : current_page.site.host, 
             port : current_page.site.port, 
@@ -151,8 +168,13 @@ Topology.Page = function(site, path) {
             }
 
             response.on('data', function(data){
-                console.log("[INFO] Fetching Page: " + current_page.path);
-                var $ = cheerio.load(data.toString());
+                page_data += data;
+            });
+
+            response.on('end', function(){
+                current_page.end_time = new Date();
+                console.log("[INFO] Fetched Page: " + current_page.path);
+                var $ = cheerio.load(page_data.toString());
                 $('a').each(function(){
                     var p = new Topology.Page(current_page.site, $(this).attr('href'));
                     if(p.valid()) {
@@ -188,7 +210,7 @@ Topology.Page = function(site, path) {
             return false;
         }
 
-        if(this.path.substring(0,1) === "#") {
+        if(this.path.substring(0,1) !== "/") {
             return false;
         }
 
@@ -205,7 +227,9 @@ Topology.Page = function(site, path) {
             errors      : this.errors,
             warnings    : this.warnings,
             messgaes    : this.messgaes,
-            status_code : this.status_code
+            status_code : this.status_code,
+            start_time  : this.start_time,
+            end_time    : this.end_time
         };
     };
 }
@@ -214,8 +238,8 @@ Topology.Page = function(site, path) {
 
 var s = new Topology.Site({
     site_name   : "ecostore",
-    host        : "localhost",
-    port        : "3000"
+    host        : "www.ecostore.co.nz",
+    port        : "80"
 });
 
 

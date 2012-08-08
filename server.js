@@ -41,6 +41,12 @@ var Report = function (){
             return this.status_code;
 
         };
+
+        all_data.pages[i].response_time = function(){
+            start_time_obj = new Date(this.start_time);
+            end_time_obj = new Date(this.end_time);
+            return (end_time_obj.getTime() - start_time_obj.getTime()) / 1000;
+        };
     };
 
     return all_data;
